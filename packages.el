@@ -57,3 +57,4 @@
 (package! org-jira)
 ;;(package! ob-doc-js)
 ;;(package! ob-doc-clojure)
+(package! docker-compose-mode)

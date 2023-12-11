@@ -348,3 +348,10 @@ The command CMD should contain a placeholder %s for the region text, which will 
   (map!
    :mode 'haskell-error-mode
    :n "q" 'quit-window))
+
+(after! docker-compose-mode
+  (map!
+   :localleader
+   :mode 'docker-compose-mode
+   :n "," 'docker-compose
+   :n "U" (cmd! (docker-compose-run-action-for-all-services "up" "-d"))))
