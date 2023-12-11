@@ -350,8 +350,12 @@ The command CMD should contain a placeholder %s for the region text, which will 
    :n "q" 'quit-window))
 
 (after! docker-compose-mode
+  (use-package! docker-compose)
+  (setq docker-compose-command "docker compose")
   (map!
    :localleader
    :mode 'docker-compose-mode
    :n "," 'docker-compose
+
+   :desc "docker compose up -d"
    :n "U" (cmd! (docker-compose-run-action-for-all-services "up" "-d"))))
