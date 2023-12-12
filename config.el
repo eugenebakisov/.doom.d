@@ -358,7 +358,10 @@ The command CMD should contain a placeholder %s for the region text, which will 
    :n "," 'docker-compose
 
    :desc "docker compose up -d"
-   :n "U" (cmd! (docker-compose-run-action-for-all-services "up" "-d"))))
+   :n "U" (cmd! (docker-compose-run-action-for-all-services "up" "-d")))
+  (map!
+   :mode 'shell-mode
+   :n "q" '+workspace/close-window-or-workspace))
 
 (after! tramp
   (setq vterm-tramp-shells '(("docker" "/bin/sh") ("ssh" "/usr/bin/fish"))))
