@@ -33,7 +33,7 @@
 ;; available. You can either set `doom-theme' or manually load a theme with the
 ;; `load-theme' function. This is the default:
 (setq doom-theme 'doom-solarized-dark-high-contrast
-      doom-font (font-spec :family "JetBrains Mono" :size 22 :weight 'medium))
+      doom-font (font-spec :family "JetBrains Mono" :size 16 :weight 'medium))
 
 ;; This determines the style of line numbers in effect. If set to `nil', line
 ;; numbers are disabled. For relative line numbers, set this to `relative'.
@@ -79,8 +79,8 @@
 (setq evil-snipe-override-evil-repeat-keys nil)
 (setq doom-localleader-key ",")
 
-                                        ;(require 'org-jira)
-                                        ;(setq jiralib-url "https://dividendfinance.atlassian.net")
+(require 'org-jira)
+(setq jiralib-url "https://dividendfinance.atlassian.net")
 (after! evil-escape (setq-default evil-escape-key-sequence "fd"
                                   evil-escape-delay 0.30))
 
@@ -187,8 +187,8 @@ If it's not a Tramp filename, return nil."
 ;; The maximum displayed length of the branch name of version control.
 (setq doom-modeline-vcs-max-length 15)
 
-(after! zprint-mode
-  (map! :v ", f f" 'zprint))
+'(after! zprint-mode
+   (map! :v ", f f" 'zprint))
 
                                         ; heeeeelll noooo~
 '(after! zprint-mode
@@ -201,17 +201,17 @@ If it's not a Tramp filename, return nil."
    :leader :n "g s f" 'magit-stage-buffer-file
    :leader :n "g s h" '+vc-gutter/stage-hunk))
 
-(after! gptel
-  (setq-default gptel-model  "mistral:latest"
-                gptel-backend (gptel-make-ollama
-                               "Ollama"
-                               :host "localhost:11434"
-                               :models '("codellama:13b-instruct" "mistral:latest")
-                               :stream t))
-  (map!
-   :leader :v "c q" 'gptel-send
-   :leader :n "c b" 'gptel))
-(use-package! gptel)
+'(after! gptel
+   (setq-default gptel-model  "mistral:latest"
+                 gptel-backend (gptel-make-ollama
+                                   "Ollama"
+                                 :host "localhost:11434"
+                                 :models '("codellama:13b-instruct" "mistral:latest")
+                                 :stream t))
+   (map!
+    :leader :v "c q" 'gptel-send
+    :leader :n "c b" 'gptel))
+'(use-package! gptel)
 
 '(defun run-command (cmd)
    (interactive)
@@ -315,6 +315,7 @@ The command CMD should contain a placeholder %s for the region text, which will 
 '(use-package! emacs-async :ensure t)
 
 (after! org-jira
+  (setq org-jira-working-dir "~/dividend/jira")
   (setq jiralib-url "https://dividendfinance.atlassian.net"))
 
 
@@ -340,10 +341,6 @@ The command CMD should contain a placeholder %s for the region text, which will 
             'fixedcase
             'literal))))))
 
-(defconst org-jira-progress-issue-flow
-  '(("To Do" . "In Progress")
-    ("In Progress" . "Dev Complete")))
-
 (after! haskell-mode
   (map!
    :mode 'haskell-error-mode
@@ -365,3 +362,44 @@ The command CMD should contain a placeholder %s for the region text, which will 
 
 (after! tramp
   (setq vterm-tramp-shells '(("docker" "/bin/sh") ("ssh" "/usr/bin/fish"))))
+
+'(after! treesit
+   (setq treesit-language-source-alist
+         '((typescript "https://github.com/tree-sitter/tree-sitter-typescript" "master" "typescript/src" nil nil)
+           (tsx "https://github.com/tree-sitter/tree-sitter-typescript" "master" "tsx/src" nil nil))))
+
+'(use-package typescript-ts-mode
+   :mode (("\\.ts\\'" . typescript-ts-mode)
+          ("\\.tsx\\'" . tsx-ts-mode))
+   :config
+   (add-hook! '(typescript-ts-mode-hook tsx-ts-mode-hook) #'lsp!))
+
+'(let ((regex "static-if"))
+   (->> (elisp-load-path-roots)
+        (-filter #'file-exists-p)
+        (mapcar #'shell-quote-argument)
+        (append `("grep" "-R" ,(shell-quote-argument regex)))
+        (funcall (-flip #'string-join) " ")
+        (grep-find)))
+
+(defun eb-prepare-pr ()
+  (interactive)
+  (let ((git-branch (magit-get-current-branch)))
+    (when (string-match "SCRUM-\\([0-9]+\\)" git-branch)
+      (let* ((jira-id (match-string 1 git-branch))
+             (jira-issue-id (concat "SCRUM-" jira-id))
+             (jira-issue-url (mapconcat #'identity (list jiralib-url "browse" jira-issue-id) "/") )
+             (jira-issue-summary (org-jira-find-value
+                                  (jiralib--rest-call-it
+                                   (format "/rest/api/2/issue/%s?fields=summary" jira-issue-id))
+                                  'fields 'summary)))
+        (with-temp-buffer
+          (insert
+           "## Overview"
+           "\n\n"
+           (format "Resolves [%s](%s)" jira-issue-id jira-issue-url)
+           "\n\n"
+           (format "> %s" jira-issue-summary)
+           "\n\n"
+           "## Details")
+          (buffer-string))))))
