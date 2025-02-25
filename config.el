@@ -204,10 +204,10 @@ If it's not a Tramp filename, return nil."
 '(after! gptel
    (setq-default gptel-model  "mistral:latest"
                  gptel-backend (gptel-make-ollama
-                                   "Ollama"
-                                 :host "localhost:11434"
-                                 :models '("codellama:13b-instruct" "mistral:latest")
-                                 :stream t))
+                                "Ollama"
+                                :host "localhost:11434"
+                                :models '("codellama:13b-instruct" "mistral:latest")
+                                :stream t))
    (map!
     :leader :v "c q" 'gptel-send
     :leader :n "c b" 'gptel))
@@ -390,8 +390,7 @@ The command CMD should contain a placeholder %s for the region text, which will 
              (jira-issue-id (concat "SCRUM-" jira-id))
              (jira-issue-url (mapconcat #'identity (list jiralib-url "browse" jira-issue-id) "/") )
              (jira-issue-summary (org-jira-find-value
-                                  (jiralib--rest-call-it
-                                   (format "/rest/api/2/issue/%s?fields=summary" jira-issue-id))
+                                  (jiralib-call "getIssue" nil jira-issue-id)
                                   'fields 'summary)))
         (with-temp-buffer
           (insert
