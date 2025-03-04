@@ -59,3 +59,6 @@
 ;;(package! ob-doc-clojure)
 ;;(package! docker-compose-mode)
 ;;(package! typescript-mode :disable t)
+
+(package! nano
+  :recipe (:host github :repo "rougier/nano-emacs"))

@@ -402,3 +402,12 @@ The command CMD should contain a placeholder %s for the region text, which will 
            "\n\n"
            "## Details")
           (buffer-string))))))
+
+(require 'nano)
+(set-face-attribute 'help-key-binding nil :inherit nil)
+(set-face-attribute 'read-multiple-choice-face nil :inherit 'nano-face-strong)
+(require 'nano-layout)
+(require 'nano-faces)
+(nano-faces)
+(nano-theme-set-dark)
+(nano-refresh-theme)
